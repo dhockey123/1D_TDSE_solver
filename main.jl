@@ -19,7 +19,7 @@ k   = wavenumber
 σ   = spatial width/spread of the packet
 x_0 = coordinate the packet is centered at
 =#
-
+println("Hello, world")
 Base.@kwdef mutable struct Params
     Nx::Int64
     Nt::Int64
@@ -60,39 +60,30 @@ ylims!(ax1, -1, 1), ylims!(ax2, -1, 1), ylims!(ax3, -.05, 1.5)
 scene, layout = layoutscene()
 
 layout[1, 1] = Label(fig, "x,x")
-layout[1, 2] = x_range = IntervalSlider(fig, range = -30:1:30, startvalues = (-5, 5), width=300)
+layout[1, 2] = x_range = IntervalSlider(fig, range = -30:1:30, startvalues = (-5, 5), width=250)
 layout[1, 3] = Label(fig, @lift string($(x_range.interval)))
 
 x_0_slider   = labelslider!(fig, "x_0:", -30:1:30; format = x -> "$(x)", startvalue=4)
 k_slider     = labelslider!(fig, "k:", -15:0.1:15; format = x -> "$(x)")
 σ_slider     = labelslider!(fig, "σ:", 0.1:0.1:10; format = x -> "$(x)")
-Nx_slider    = labelslider!(fig, "Nx:", 2:1:2048; format = x -> "$(x)")
-Nt_slider    = labelslider!(fig, "Nt:", 1:1:512; format = x -> "$(x)")
+Nx_slider    = labelslider!(fig, "Nx:", 10:1:2048; format = x -> "$(x)")
+Nt_slider    = labelslider!(fig, "Nt:", 10:1:512; format = x -> "$(x)")
 t_max_slider = labelslider!(fig, "t:", 0.1:0.1:10; format = x -> "$(x)")
 
-Nx_slider.slider.startvalue = 1024
-Nt_slider.slider.startvalue = 512
-t_max_slider.slider.startvalue = 3
-
 fig[1,2] = vgrid!(layout,
-x_0_slider.layout,
-k_slider.layout,
-σ_slider.layout,
-Nx_slider.layout,
-Nt_slider.layout,
-t_max_slider.layout)
+                x_0_slider.layout,
+                k_slider.layout,
+                σ_slider.layout,
+                Nx_slider.layout,
+                Nt_slider.layout,
+                t_max_slider.layout)
 
 menu = Menu(fig[3, 1], options = ["Crank Nicolson - ABC on", "Crank Nicolson - ABC off", "RK4"])
-menu_potentials = Menu(fig[3, 2], options = ["Oscillator", "Barrier"])
-menu_barrier = Menu(fig[3, 3], options = ["Oscillator", "Barrier"])
+# menu_potentials = Menu(fig[3, 2], options = ["Oscillator", "Barrier"])
+# menu_barrier = Menu(fig[3, 3], options = ["Oscillator", "Barrier"])
 
-@lift begin  
-    if $(menu_potentials.selection) == "Barrier"
-        if $(menu_barrier.selection) == "Barrier"
-            println("Test")
-        end
-    end
-end
+toggle = Toggle(fig[3,2])
+fig[3,2] = grid!(hcat(Label(fig, "Initialise") , toggle ,  Label(fig, "Animate") ))
 
 init_params =  @lift Params(Nx=Int64($(Nx_slider.slider.value)), 
                             Nt=Int64($(Nt_slider.slider.value)), 
@@ -101,74 +92,70 @@ init_params =  @lift Params(Nx=Int64($(Nx_slider.slider.value)),
                             x_max=$(x_range.interval)[2], 
                             x_0=$(x_0_slider.slider.value),
                             k=$(k_slider.slider.value), 
-                            t_max=$(t_max_slider.slider.value))
-       
+                            t_max=$(t_max_slider.slider.value))      
 
 @lift begin
     empty!(ax1), empty!(ax2), empty!(ax3), empty!(ax_max)
-    line1 = lines!(fig[1,1], init_params[].x, real.($(init_params).ψ), color=:red,  axis = (xlabel="x", ylabel = "y",))
-    line2 = lines!(fig[2,1], init_params[].x, imag.($(init_params).ψ), color=:blue,  axis = (xlabel="x", ylabel = "y",))
-    line3 = lines!(fig[2,2], init_params[].x, abs2.($(init_params).ψ), color=:black,  axis = (xlabel="x", ylabel = "y",))
-    line_tmp = lines!(fig[1,3], init_params[].x, real.($(init_params).ψ), color=:red,  axis = (xlabel="x", ylabel = "y",))
+    lines!(fig[1,1], init_params[].x, real.($(init_params).ψ), color=:red,  axis = (xlabel="x", ylabel = "y",))
+    lines!(fig[2,1], init_params[].x, imag.($(init_params).ψ), color=:blue,  axis = (xlabel="x", ylabel = "y",))
+    lines!(fig[2,2], init_params[].x, abs2.($(init_params).ψ), color=:black,  axis = (xlabel="x", ylabel = "y",))
+    lines!(fig[1,3], init_params[].x, real.($(init_params).ψ), color=:red,  axis = (xlabel="x", ylabel = "y",))
 end
 
-wait_for_key(prompt) = (print(stdout, prompt); read(stdin, 1); nothing)
-wait_for_key("press any key to continue")
-empty!(ax1), empty!(ax2), empty!(ax3), empty!(ax_max)
+function animate_plot()
 
-v = Potential_fields.potential_oscillator(init_params[], 1)
-init_params[].potential_field = v
+    if menu.selection[] == "Crank Nicolson - ABC on"
+        BC_par =  FDM.CN_boundary_conditions(init_params = init_params[], ABC = "true", v1=init_params[].k, v2=init_params[].k)
+        CN = FDM.CN_matrix(init_params[], BC_par)
+    elseif menu.selection[] == "Crank Nicolson - ABC off"
+        BC_par =  FDM.CN_boundary_conditions(init_params = init_params[], ABC = "false", v1=init_params[].k, v2=init_params[].k)
+        CN = FDM.CN_matrix(init_params[], BC_par)
+    end
 
-if menu.selection[] == "Crank Nicolson - ABC on"
-    BC_par =  FDM.CN_boundary_conditions(init_params = init_params[], ABC = "true", v1=init_params[].k, v2=init_params[].k)
-    CN = FDM.CN_matrix(init_params[], BC_par)
-elseif menu.selection[] == "Crank Nicolson - ABC off"
-    BC_par =  FDM.CN_boundary_conditions(init_params = init_params[], ABC = "false", v1=init_params[].k, v2=init_params[].k)
-    CN = FDM.CN_matrix(init_params[], BC_par)
-end
+    real_node = Node(real.(init_params[].ψ))
+    imag_node = Node(imag.(init_params[].ψ))
+    abs2_node = Node(abs2.(init_params[].ψ))
 
-# #################################################################################################s
-# #################################################################################################
-# #################################################################################################
-
-# #   PLOT
-
-real_node = Node(real.(init_params[].ψ))
-imag_node = Node(imag.(init_params[].ψ))
-abs2_node = Node(abs2.(init_params[].ψ))
-
-line1 = lines!(fig[1,1], init_params[].x, real_node, color=:red,  axis = (xlabel="x", ylabel = "y",))
-line_tmp = lines!(fig[1,3], init_params[].x, real_node, color=:red,  axis = (xlabel="x", ylabel = "y",))
-line2 = lines!(fig[2,1], init_params[].x, imag_node, color=:blue,  axis = (xlabel="x", ylabel = "y",))
-line3 = lines!(fig[2,2], init_params[].x, abs2_node, color=:black,  axis = (xlabel="x", ylabel = "y",))
+    lines!(fig[1,1], init_params[].x, real_node, color=:red,  axis = (xlabel="x", ylabel = "y",))
+    lines!(fig[1,3], init_params[].x, real_node, color=:red,  axis = (xlabel="x", ylabel = "y",))
+    lines!(fig[2,1], init_params[].x, imag_node, color=:blue,  axis = (xlabel="x", ylabel = "y",))
+    lines!(fig[2,2], init_params[].x, abs2_node, color=:black,  axis = (xlabel="x", ylabel = "y",))
 
 
-norm_init = sum(abs2.(init_params[].ψ[1:end]))
-norm_node = Node(Point2f0[(0,1)])
-lines4 = lines!(fig[2, 3], norm_node)
+    norm_init = sum(abs2.(init_params[].ψ[1:end]))
+    norm_node = Node(Point2f0[(0,1)])
+    lines!(fig[2, 3], norm_node)
 
 
-record(fig, "test.mp4") do io
-    for i in init_params[].t
-        if menu.selection[] == "Crank Nicolson - ABC on" || menu.selection[] == "Crank Nicolson - ABC off"
-            init_params[].ψ = CN*init_params[].ψ
-        elseif menu.selection[] == "RK4"
-            init_params[].ψ = FDM.rk4(init_params[])
+    record(fig, "test.mp4") do io
+        for i in init_params[].t
+            if menu.selection[] == "Crank Nicolson - ABC on" || menu.selection[] == "Crank Nicolson - ABC off"
+                init_params[].ψ = CN*init_params[].ψ
+            elseif menu.selection[] == "RK4"
+                init_params[].ψ = FDM.rk4(init_params[])
+            end
+
+            current_norm = sum(abs2.(init_params[].ψ[2:end-1]))/norm_init
+
+            update_norm = Point2f0(i, current_norm)
+            norm_node[] = push!(norm_node[], update_norm)
+            ylims!(ax_node, floor(current_norm, digits=20)/1.1, 1.1)
+            xlims!(ax_node, 0, i+0.05)
+            tmp_max = maximum([abs(minimum(real.(init_params[].ψ[2:end-1]))), maximum(real.(init_params[].ψ[2:end-1]))])
+            ylims!(ax_max,-tmp_max,tmp_max)
+            real_node[] = real.(init_params[].ψ)
+            imag_node[] = imag.(init_params[].ψ)
+            abs2_node[] = abs2.(init_params[].ψ)
+            ax3.title = "t = $(round(i, digits=4))"
+            recordframe!(io)
         end
+    end
+end
 
-        current_norm = sum(abs2.(init_params[].ψ[2:end-1]))/norm_init
-
-        update_norm = Point2f0(i, current_norm)
-        norm_node[] = push!(norm_node[], update_norm)
-        ylims!(ax_node, floor(current_norm, digits=20)/1.1, 1.1)
-        xlims!(ax_node, 0, i+0.05)
-        tmp_max = maximum([abs(minimum(real.(init_params[].ψ[2:end-1]))), maximum(real.(init_params[].ψ[2:end-1]))])
-        ylims!(ax_max,-tmp_max,tmp_max)
-        real_node[] = real.(init_params[].ψ)
-        imag_node[] = imag.(init_params[].ψ)
-        abs2_node[] = abs2.(init_params[].ψ)
-        ax3.title = "t = $(round(i, digits=4))"
-        recordframe!(io)
+@lift begin
+    if $(toggle.active) == true
+        empty!(ax1), empty!(ax2), empty!(ax3), empty!(ax_max)
+        @async animate_plot()
     end
 end
 
