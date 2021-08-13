@@ -1,1 +1,1 @@
-# TDSE_solver
+# 1D_TDSE_solver
