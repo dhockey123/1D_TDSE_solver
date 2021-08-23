@@ -51,9 +51,11 @@ Can construct as many barriers as needed, just ensure the barriers don't exist o
 # barriers = [[mag_1, pos_1, width_1], [mag_2, pos_2, width_2]]
 barriers = [[100, 0, 2], [-33, 4, 4]]
 ```
+## Changing initial conditions after animating plot
+
+To plot again with different initial conditions wait till t reachs t_max, toggle back to "Initialise" and set up as before. The less buggy option is to rerun again from VSCode ( its much faster the 2nd time) .
 
 # Examples
-
 
 ![gitgif_CN](https://user-images.githubusercontent.com/81137805/130281259-af0bbe3f-78b3-4c0f-add0-437719d5d141.gif)
 ![gitgif_oscillator](https://user-images.githubusercontent.com/81137805/130282258-8f24555d-58f2-4c70-8c7a-67183b6564b0.gif)
