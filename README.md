@@ -9,7 +9,7 @@ A one-dimensional time-dependent Schrödinger equation visualiser that illustrat
 
 # Usage
 
-Using Ctrl+a and Ctrl+Enter in VSCode from "main.jl" is the recommended way to run the code. Does NOT work directly from terminal ( This might just be my system though ). 
+Using Ctrl+a and Ctrl+Enter in VSCode from "main.jl" is the recommended way to run the code. Does NOT work directly from terminal ( This might just be my system though ). Might have to specify the exact locations to the #include files.
 
 User interaction is enabled for specifying the following,
 
