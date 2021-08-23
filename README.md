@@ -1,6 +1,4 @@
 
-
-
 1D TDSE Solver
 ===============================
 # About
@@ -44,6 +42,23 @@ Barriers
 No choice = None
 ```
 
+## Constructing potential barriers
+In-app construction of potential barriers is currently not available.
+Barriers are constructed by defining the potential magnitude, position barrier is centered at and width of barrier in the array called "barriers"
+Can construct as many barriers as needed, just ensure the barriers don't exist outside solution domain.
+### example
+```
+# barriers = [[mag_1, pos_1, width_1], [mag_2, pos_2, width_2]]
+barriers = [[100, 0, 2], [-33, 4, 4]]
+```
+
+# Examples
+
+
+![gitgif_CN](https://user-images.githubusercontent.com/81137805/130281259-af0bbe3f-78b3-4c0f-add0-437719d5d141.gif)
+![gitgif_oscillator](https://user-images.githubusercontent.com/81137805/130282258-8f24555d-58f2-4c70-8c7a-67183b6564b0.gif)
+
+
 # Version Info
 ```
 Julia   v1.6.2
@@ -51,11 +66,6 @@ GLMakie v0.4.4
 FFTW    v1.4.3
 ```
 
-
-# Examples
-
-![gitgif_CN](https://user-images.githubusercontent.com/81137805/130281259-af0bbe3f-78b3-4c0f-add0-437719d5d141.gif)
-![gitgif_oscillator](https://user-images.githubusercontent.com/81137805/130282258-8f24555d-58f2-4c70-8c7a-67183b6564b0.gif)
 
 # Task list
 - [] Implement higher-order finite difference methods
@@ -72,6 +82,8 @@ Kuska J. Absorbing boundary conditions for the Schrödinger equation on finite i
 
 Shibata T. Absorbing boundary conditions for the finite-difference time-domain calculation of the one-dimensional Schrödinger equation. Physical Review B. 1991;43(8):6760-6763.
 ```
+
+
 
 
 
