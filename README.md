@@ -66,7 +66,7 @@ FFTW    v1.4.3
 - [] Enable in-app construction of potential barriers
 - [] Implement Chebyshev solutin method 
 
-## References for one-way boundaries
+## References for constructing one-way boundaries
 
 ```
 Fevens T, Jiang H. Absorbing Boundary Conditions for the Schrödinger Equation. SIAM Journal on Scientific Computing. 1999;21(1):255-282.
