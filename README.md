@@ -45,7 +45,7 @@ No choice = None
 ## Constructing potential barriers
 In-app construction of potential barriers is currently not available.
 Barriers are constructed by defining the potential magnitude, position barrier is centered at and width of barrier in the array called "barriers"
-Can construct as many barriers as needed, just ensure the barriers don't exist outside solution domain.
+Can construct as many barriers as needed, just ensure the barriers don't exist outside solution domain. Don't create a new barriers array, just change the one currently present.
 ### example
 ```
 # barriers = [[mag_1, pos_1, width_1], [mag_2, pos_2, width_2]]
